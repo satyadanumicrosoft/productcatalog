@@ -1,0 +1,55 @@
+@using System.Net
+@using System.Text
+
+@{
+    var entries = Data?.OrderByDescending(kv => kv.Value).ToList() ?? new List<KeyValuePair<string, int>>();
+    const int rowHeight = 34;
+    var svgHeight = Math.Max(entries.Count * rowHeight, rowHeight);
+}
+
+<div class="price-chart">
+    <h3 class="price-chart__title">Products by Price Unit</h3>
+
+    @if (entries.Count == 0)
+    {
+        <p class="price-chart__empty">No pricing data available.</p>
+    }
+    else
+    {
+        <svg viewBox="0 0 320 @svgHeight" class="price-chart__svg" role="img" aria-label="Bar chart of product counts by price unit">
+            @((MarkupString)BuildBarsMarkup(entries, rowHeight))
+        </svg>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyDictionary<string, int>? Data { get; set; }
+    
+    private static string BuildBarsMarkup(List<KeyValuePair<string, int>> entries, int rowHeight)
+    {
+        var maxValue = entries.Count > 0 ? entries.Max(e => e.Value) : 0;
+        var sb = new StringBuilder();
+
+        for (var i = 0; i < entries.Count; i++)
+        {
+            var entry = entries[i];
+            var barWidthPercent = maxValue == 0 ? 0 : (double)entry.Value / maxValue;
+            var barWidth = 190 * barWidthPercent;
+            var y = i * rowHeight;
+            var labelY = y + rowHeight / 2 + 4;
+            var label = WebUtility.HtmlEncode(entry.Key);
+
+            sb.Append("<text x=\"0\" y=\"").Append(labelY).Append("\" class=\"price-chart__label\">")
+              .Append(label).Append("</text>");
+
+            sb.Append("<rect x=\"70\" y=\"").Append(y + 6).Append("\" width=\"").Append(barWidth.ToString("0.##"))
+              .Append("\" height=\"").Append(rowHeight - 14).Append("\" rx=\"4\" class=\"price-chart__bar\"></rect>");
+
+            sb.Append("<text x=\"").Append((70 + barWidth + 8).ToString("0.##")).Append("\" y=\"").Append(labelY)
+              .Append("\" class=\"price-chart__value\">").Append(entry.Value).Append("</text>");
+        }
+
+        return sb.ToString();
+    }
+}

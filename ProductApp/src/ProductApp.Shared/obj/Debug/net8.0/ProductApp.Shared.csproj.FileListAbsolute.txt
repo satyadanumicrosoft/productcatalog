@@ -1,0 +1,11 @@
+C:\sdanu\TestProjects\Meijer\Claude\ProductApp\src\ProductApp.Shared\bin\Debug\net8.0\ProductApp.Shared.deps.json
+C:\sdanu\TestProjects\Meijer\Claude\ProductApp\src\ProductApp.Shared\bin\Debug\net8.0\ProductApp.Shared.dll
+C:\sdanu\TestProjects\Meijer\Claude\ProductApp\src\ProductApp.Shared\bin\Debug\net8.0\ProductApp.Shared.pdb
+C:\sdanu\TestProjects\Meijer\Claude\ProductApp\src\ProductApp.Shared\obj\Debug\net8.0\ProductApp.Shared.GeneratedMSBuildEditorConfig.editorconfig
+C:\sdanu\TestProjects\Meijer\Claude\ProductApp\src\ProductApp.Shared\obj\Debug\net8.0\ProductApp.Shared.AssemblyInfoInputs.cache
+C:\sdanu\TestProjects\Meijer\Claude\ProductApp\src\ProductApp.Shared\obj\Debug\net8.0\ProductApp.Shared.AssemblyInfo.cs
+C:\sdanu\TestProjects\Meijer\Claude\ProductApp\src\ProductApp.Shared\obj\Debug\net8.0\ProductApp.Shared.csproj.CoreCompileInputs.cache
+C:\sdanu\TestProjects\Meijer\Claude\ProductApp\src\ProductApp.Shared\obj\Debug\net8.0\ProductApp.Shared.dll
+C:\sdanu\TestProjects\Meijer\Claude\ProductApp\src\ProductApp.Shared\obj\Debug\net8.0\refint\ProductApp.Shared.dll
+C:\sdanu\TestProjects\Meijer\Claude\ProductApp\src\ProductApp.Shared\obj\Debug\net8.0\ProductApp.Shared.pdb
+C:\sdanu\TestProjects\Meijer\Claude\ProductApp\src\ProductApp.Shared\obj\Debug\net8.0\ref\ProductApp.Shared.dll

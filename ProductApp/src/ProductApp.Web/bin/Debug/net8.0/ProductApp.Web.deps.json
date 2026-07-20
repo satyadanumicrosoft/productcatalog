@@ -1,0 +1,36 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "ProductApp.Web/1.0.0": {
+        "dependencies": {
+          "ProductApp.Shared": "1.0.0"
+        },
+        "runtime": {
+          "ProductApp.Web.dll": {}
+        }
+      },
+      "ProductApp.Shared/1.0.0": {
+        "runtime": {
+          "ProductApp.Shared.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "ProductApp.Web/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "ProductApp.Shared/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

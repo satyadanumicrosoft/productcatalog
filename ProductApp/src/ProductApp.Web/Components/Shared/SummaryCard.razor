@@ -1,0 +1,19 @@
+<div class="summary-card">
+    <span class="summary-card__label">@Label</span>
+    <span class="summary-card__value">@Value</span>
+    @if (!string.IsNullOrWhiteSpace(SubText))
+    {
+        <span class="summary-card__subtext">@SubText</span>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Label { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string Value { get; set; } = string.Empty;
+
+    [Parameter]
+    public string? SubText { get; set; }
+}

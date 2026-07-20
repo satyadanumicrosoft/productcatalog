@@ -1,0 +1,122 @@
+@page "/"
+@inject IProductApiClient ProductApiClient
+@inject NavigationManager NavigationManager
+@inject ILogger<Overview> Logger
+
+<PageTitle>Product Catalog &ndash; Overview</PageTitle>
+
+<h1>Product Catalog</h1>
+
+@if (_isLoading)
+{
+    <p class="status status--loading">Loading catalog&hellip;</p>
+}
+else if (_loadError is not null)
+{
+    <p class="status status--error">@_loadError</p>
+}
+else
+{
+    <section class="summary-grid" aria-label="Catalog summary metrics">
+        <SummaryCard Label="Total Products" Value="@_metrics!.TotalProducts.ToString()" />
+        <SummaryCard Label="Average Price" Value="@_metrics.AveragePrice.ToString("C")" />
+        <SummaryCard Label="Most Expensive" Value="@(_metrics.MostExpensive?.Title ?? "-")" SubText="@_metrics.MostExpensive?.Price" />
+        <SummaryCard Label="Least Expensive" Value="@(_metrics.LeastExpensive?.Title ?? "-")" SubText="@_metrics.LeastExpensive?.Price" />
+    </section>
+
+    <section class="overview-body">
+        <div class="overview-body__chart">
+            <PriceUnitChart Data="@_metrics.ByPriceUnit" />
+        </div>
+
+        <div class="overview-body__controls">
+            <label for="search" class="search-label">Search by title or price unit</label>
+            <input id="search"
+                   class="search-input"
+                   type="search"
+                   placeholder="e.g. berries, /lb, avocado"
+                   value="@_searchTerm"
+                   @oninput="OnSearchChanged" />
+            <span class="search-results-count">@_filteredProducts.Count of @_allProducts.Count products</span>
+        </div>
+    </section>
+
+    <section class="product-list" aria-label="Product catalog">
+        @if (_filteredProducts.Count == 0)
+        {
+            <p class="status status--empty">No products match "@_searchTerm".</p>
+        }
+        else
+        {
+            @foreach (var product in _filteredProducts)
+            {
+                <button type="button" class="product-row" @onclick="() => GoToDetail(product.Id)">
+                    <img src="@product.ImageUrl" alt="@product.Title" class="product-row__image" loading="lazy" />
+                    <span class="product-row__text">
+                        <span class="product-row__title">@product.Title</span>
+                        <span class="product-row__summary">@product.Summary</span>
+                    </span>
+                    <span class="product-row__chevron" aria-hidden="true">&rsaquo;</span>
+                </button>
+            }
+        }
+    </section>
+}
+
+@code {
+    private IReadOnlyList<ProductSummaryDto> _allProducts = Array.Empty<ProductSummaryDto>();
+    private List<ProductSummaryDto> _filteredProducts = new();
+    private ProductMetricsDto? _metrics;
+    private string _searchTerm = string.Empty;
+    private bool _isLoading = true;
+    private string? _loadError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var productsTask = ProductApiClient.GetProductsAsync();
+            var metricsTask = ProductApiClient.GetMetricsAsync();
+
+            await Task.WhenAll(productsTask, metricsTask);
+
+            _allProducts = productsTask.Result;
+            _filteredProducts = _allProducts.ToList();
+            _metrics = metricsTask.Result;
+        }
+        catch (ProductApp.Web.Exceptions.ProductApiException ex)
+        {
+            Logger.LogError(ex, "Failed to load overview data");
+            _loadError = ex.Message;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void OnSearchChanged(ChangeEventArgs e)
+    {
+        _searchTerm = e.Value?.ToString() ?? string.Empty;
+        ApplyFilter();
+    }
+
+    private void ApplyFilter()
+    {
+        if (string.IsNullOrWhiteSpace(_searchTerm))
+        {
+            _filteredProducts = _allProducts.ToList();
+            return;
+        }
+
+        var term = _searchTerm.Trim();
+
+        _filteredProducts = _allProducts
+            .Where(p => p.Title.Contains(term, StringComparison.OrdinalIgnoreCase)
+                        || p.Summary.Contains(term, StringComparison.OrdinalIgnoreCase)
+                        || (p.PriceUnit is not null && p.PriceUnit.Contains(term, StringComparison.OrdinalIgnoreCase)))
+            .ToList();
+    }
+
+    private void GoToDetail(int id) => NavigationManager.NavigateTo($"/product/{id}");
+}

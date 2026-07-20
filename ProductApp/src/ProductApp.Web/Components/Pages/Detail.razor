@@ -1,0 +1,121 @@
+@page "/product/{Id:int}"
+@inject IProductApiClient ProductApiClient
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+@inject ILogger<Detail> Logger
+
+<PageTitle>@(_product?.Title ?? "Product Detail")</PageTitle>
+
+<a href="/" class="back-link">&laquo; Back to catalog</a>
+
+@if (_isLoading)
+{
+    <p class="status status--loading">Loading product&hellip;</p>
+}
+else if (_loadError is not null)
+{
+    <p class="status status--error">@_loadError</p>
+}
+else if (_product is null)
+{
+    <p class="status status--empty">We couldn't find a product with id @Id.</p>
+}
+else
+{
+    <article class="product-detail">
+        <img src="@_product.ImageUrl" alt="@_product.Title" class="product-detail__image" />
+
+        <div class="product-detail__body">
+            <h1 class="product-detail__title">@_product.Title</h1>
+            <p class="product-detail__description">@_product.Description</p>
+            <p class="product-detail__price">@_product.Price</p>
+
+            <button type="button" class="btn btn--primary" @onclick="AddToListAsync" disabled="@_isSharing">
+                @(_isSharing ? "Adding..." : "Add to List")
+            </button>
+
+            @if (_shareMessage is not null)
+            {
+                <div class="share-confirmation" role="status">
+                    <p class="share-confirmation__text">@_shareMessage</p>
+                    @if (_shareStatus is not null)
+                    {
+                        <p class="share-confirmation__status">@_shareStatus</p>
+                    }
+                </div>
+            }
+        </div>
+    </article>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private ProductDetailDto? _product;
+    private bool _isLoading = true;
+    private string? _loadError;
+
+    private bool _isSharing;
+    private string? _shareMessage;
+    private string? _shareStatus;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _isLoading = true;
+        _loadError = null;
+        _shareMessage = null;
+        _shareStatus = null;
+
+        try
+        {
+            _product = await ProductApiClient.GetProductByIdAsync(Id);
+        }
+        catch (ProductApp.Web.Exceptions.ProductApiException ex)
+        {
+            Logger.LogError(ex, "Failed to load product {ProductId}", Id);
+            _loadError = ex.Message;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task AddToListAsync()
+    {
+        if (_product is null)
+        {
+            return;
+        }
+
+        _isSharing = true;
+        _shareStatus = null;
+
+        try
+        {
+            var city = await JsRuntime.InvokeAsync<string>("productApp.getCurrentCity");
+
+            var message = $"{_product.Title} - {_product.Price} from {city} added to list";
+            _shareMessage = message;
+
+            var result = await JsRuntime.InvokeAsync<string>("productApp.shareText", message);
+
+            _shareStatus = result switch
+            {
+                "shared" => "Shared successfully.",
+                "copied" => "Copied to clipboard.",
+                _ => "Copy the text above to share it manually."
+            };
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Add to List failed for product {ProductId}", Id);
+            _shareStatus = "Something went wrong while sharing. Please try again.";
+        }
+        finally
+        {
+            _isSharing = false;
+        }
+    }
+}
